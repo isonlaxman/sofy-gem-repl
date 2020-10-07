@@ -207,8 +207,10 @@ def chooseGem():
     gem_p = np.array(list(map(lambda x: x["weight"], state[groupIndex]["paths"][pathIndex]["gemGroups"])))
     gem_p /= gem_p.sum()
 
-    gemGroupIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"]))), p=gem_p)
-    gemIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"]))))
+    while True:
+        gemGroupIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"]))), p=gem_p)
+        if state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"]:
+            gemIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"]))))
 
     print(groupIndex, pathIndex, gemIndex, gemGroupIndex)
     return groupIndex, pathIndex, gemIndex, gemGroupIndex
