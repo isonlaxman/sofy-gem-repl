@@ -47,48 +47,6 @@ initialState = [
                         ],
                     }
                 ]
-            },
-            {
-                "name": 'character',
-                "weight": 0.5,
-                "gemGroups": [
-                    {
-                        "type": "seen",
-                        "weight": .1,
-                        "gems": [
-                            {
-                                "name": "g1"
-                            }
-                        ],
-                    },
-                    {
-                        "type": "hearted",
-                        "weight": .2,
-                        "gems": [
-                            {
-                                "name": "g1"
-                            },
-                            {
-                                "name": "g2"
-                            },
-                            {
-                                "name": "g3"
-                            }
-                        ],
-                    },
-                    {
-                        "type": "new",
-                        "weight": .7,
-                        "gems": [
-                            {
-                                "name": "g1"
-                            },
-                            {
-                                "name": "g2"
-                            }
-                        ],
-                    }
-                ]
             }
         ]
     },
@@ -98,48 +56,6 @@ initialState = [
         "paths": [
             {
                 "name": 'happiness',
-                "weight": 1/3,
-                "gemGroups": [
-                    {
-                        "type": "seen",
-                        "weight": .1,
-                        "gems": [
-                            {
-                                "name": "g1"
-                            }
-                        ],
-                    },
-                    {
-                        "type": "hearted",
-                        "weight": .2,
-                        "gems": [
-                            {
-                                "name": "g1"
-                            },
-                            {
-                                "name": "g2"
-                            },
-                            {
-                                "name": "g3"
-                            }
-                        ],
-                    },
-                    {
-                        "type": "new",
-                        "weight": .7,
-                        "gems": [
-                            {
-                                "name": "g1"
-                            },
-                            {
-                                "name": "g2"
-                            }
-                        ],
-                    }
-                ]
-            },
-            {
-                "name": 'character',
                 "weight": 1/3,
                 "gemGroups": [
                     {
@@ -228,7 +144,7 @@ initialState = [
 
 state = initialState
 
-def heart(groupIndex, pathIndex, gemIndex):
+def heart(groupIndex, pathIndex, gemIndex, gemGroupIndex):
     # layer 1
     layer_1_change = 1/state[groupIndex]["weight"] / 100
     gWeight = state[groupIndex]["weight"]
@@ -263,6 +179,20 @@ def heart(groupIndex, pathIndex, gemIndex):
         else:
             state[groupIndex]["paths"][p]["weight"] -= layer_2_change / len(state[groupIndex]["paths"])
 
+    # layer 3
+    gem = state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"][gemIndex]
+    del state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"][gemIndex]
+
+    state[groupIndex]["paths"][pathIndex]["gemGroups"][1]["gems"].append(gem)
+
+
+def skip(groupIndex, pathIndex, gemIndex, gemGroupIndex):
+    if gemGroupIndex == 2:
+        gem = state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"][gemIndex]
+        del state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"][gemIndex]
+
+        state[groupIndex]["paths"][pathIndex]["gemGroups"][0]["gems"].append(gem)
+
 def chooseGem():
     group_p = np.array([state[0]["weight"], state[1]["weight"]])
     group_p /= group_p.sum()
@@ -278,22 +208,26 @@ def chooseGem():
     gem_p /= gem_p.sum()
 
     gemGroupIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"]))), p=gem_p)
-    gemIndex = np.random.choice(state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"], p=gem_p)
-    return groupIndex, pathIndex, gemIndex
+    gemIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"]))))
+
+    print(groupIndex, pathIndex, gemIndex, gemGroupIndex)
+    return groupIndex, pathIndex, gemIndex, gemGroupIndex
 
 pp = pprint.PrettyPrinter()
 print("Welcome to Sofy's gem weight testing system. At each step, you'll be provided with a gem and will be give the choice to heart [h] or skip [s]. After every action, you'll be show the latest weights")
 while True:
     pp.pprint(state)
 
-    groupIndex, pathIndex, gemIndex = chooseGem()
-    print("Your gem for the day is: " + str(gemIndex) + " in path " + str(pathIndex) + " in group " + str(groupIndex))
+    groupIndex, pathIndex, gemIndex, gemGroupIndex = chooseGem()
+    print("Your gem for the day is: " + str(gemIndex) + " in path " + str(state[groupIndex]["paths"][pathIndex]["name"]) + " in group " + str("non connections" if groupIndex else "connections"))
     print("Enter h or s")
 
     command = input()
 
     if (command == "h"):
-        heart(groupIndex, pathIndex, gemIndex)
-    else: 
+        heart(groupIndex, pathIndex, gemIndex, gemGroupIndex)
+    elif (command == "s"):
+        skip(groupIndex, pathIndex, gemIndex, gemGroupIndex)
+    else:
         continue
 
