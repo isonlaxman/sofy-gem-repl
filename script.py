@@ -8,7 +8,7 @@ initialState = [
         "paths": [
             {
                 "name": 'relationships',
-                "weight": 0.5,
+                "weight": 1,
                 "gemGroups": [
                     {
                         "type": "seen",
@@ -56,7 +56,7 @@ initialState = [
         "paths": [
             {
                 "name": 'happiness',
-                "weight": 1/3,
+                "weight": .5,
                 "gemGroups": [
                     {
                         "type": "seen",
@@ -98,7 +98,7 @@ initialState = [
             },
             {
                 "name": 'love',
-                "weight": 1/3,
+                "weight": .5,
                 "gemGroups": [
                     {
                         "type": "seen",
@@ -211,14 +211,36 @@ def chooseGem():
         gemGroupIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"]))), p=gem_p)
         if state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"]:
             gemIndex = np.random.choice(list(range(len(state[groupIndex]["paths"][pathIndex]["gemGroups"][gemGroupIndex]["gems"]))))
+            break
 
     print(groupIndex, pathIndex, gemIndex, gemGroupIndex)
     return groupIndex, pathIndex, gemIndex, gemGroupIndex
 
 pp = pprint.PrettyPrinter()
 print("Welcome to Sofy's gem weight testing system. At each step, you'll be provided with a gem and will be give the choice to heart [h] or skip [s]. After every action, you'll be show the latest weights")
+
+def get_relevant(state):
+    new_state = {
+        "connections": {
+            "weight": state[0]["weight"],
+            "paths": {}
+        },
+        "nonConnections": {
+            "weight": state[1]["weight"],
+            "paths": {}
+        }
+    }
+
+    for p in state[0]["paths"]:
+        new_state["connections"]["paths"][p["name"]] = p["weight"]
+    
+    for p in state[1]["paths"]:
+        new_state["nonConnections"]["paths"][p["name"]] = p["weight"]
+    
+    return new_state
+
 while True:
-    pp.pprint(state)
+    print(get_relevant(state))
 
     groupIndex, pathIndex, gemIndex, gemGroupIndex = chooseGem()
     print("Your gem for the day is: " + str(gemIndex) + " in path " + str(state[groupIndex]["paths"][pathIndex]["name"]) + " in group " + str("non connections" if groupIndex else "connections"))
