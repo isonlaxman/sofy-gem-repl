@@ -11,9 +11,10 @@ global_headers = {
     'admin': CONFIG["admin"],
 }
 
+base_url = "http://58341c1b5233.ngrok.io"
 
 def init_database():
-    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/initDatabase"
+    url = base_url + "/sofy-firebase-backend/us-central1/api/sigma/initDatabase"
 
     payload = {}
 
@@ -22,7 +23,7 @@ def init_database():
     return json.loads(response.text)["data"]["userId"]
 
 def delete_database():
-    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/deleteDatabase"
+    url = base_url + "/sofy-firebase-backend/us-central1/api/sigma/deleteDatabase"
 
     payload = {}
 
@@ -33,7 +34,7 @@ def delete_database():
 
 
 def get_weights(userId):
-    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/user/getWeights?userId=" + userId
+    url = base_url + "/sofy-firebase-backend/us-central1/api/sigma/user/getWeights?userId=" + userId
 
     payload = {}
 
@@ -43,7 +44,7 @@ def get_weights(userId):
 
 
 def get_gem(userId):
-    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/user/getGem"
+    url = base_url + "/sofy-firebase-backend/us-central1/api/sigma/user/getGem"
 
     payload = {"userId": userId, "lastGemTime": None}
 
@@ -52,7 +53,7 @@ def get_gem(userId):
 
 
 def heart(userId, gemId):
-    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/userGem/heart"
+    url = base_url + "/sofy-firebase-backend/us-central1/api/sigma/userGem/heart"
 
     payload = {
         "userId": userId,
@@ -65,7 +66,7 @@ def heart(userId, gemId):
     return json.loads(response.text)
 
 def read(userId, gemId):
-    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/userGem/read"
+    url = base_url + "/sofy-firebase-backend/us-central1/api/sigma/userGem/read"
 
     payload = {
         "userId": userId,
