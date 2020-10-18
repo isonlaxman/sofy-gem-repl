@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 CONFIG = {}
 
@@ -19,6 +20,16 @@ def init_database():
     response = requests.request(
         "POST", url, headers=global_headers, data=payload)
     return json.loads(response.text)["data"]["userId"]
+
+def delete_database():
+    url = "http://localhost:5001/sofy-firebase-backend/us-central1/api/sigma/deleteDatabase"
+
+    payload = {}
+
+    requests.request(
+        "POST", url, headers=global_headers, data=payload)
+
+    return "Data deleted"
 
 
 def get_weights(userId):
@@ -73,9 +84,26 @@ gemGroupMap = {
     2: "new"
 }
 
+path_count_map = {}
 
 def get_relevant_info(chosenGem, weights):
     retVal = {}
+
+    gem_name = ""
+    path_id = chosenGem["pathId"]
+    gem_id = chosenGem["id"]
+
+    if path_id in path_count_map:
+        if gem_id not in path_count_map[path_id]:
+            path_count_map[path_id][gem_id] = path_id + " " + str(path_count_map[path_id]["count"] + 1)
+            path_count_map[path_id]["count"] += 1
+    else:
+        path_count_map[path_id] = {
+            "count": 1, 
+            gem_id: path_id + " " + str(1)
+        }
+
+    gem_name = path_count_map[path_id][gem_id]
 
     for gi, g in enumerate(weights):
         for _, p in enumerate(g["items"]):
@@ -89,7 +117,7 @@ def get_relevant_info(chosenGem, weights):
                         if gem["id"] == chosenGem["id"]:
                             retVal["gemGroup"] = {"name": gemGroupMap[ggi]}
                             retVal["gem"] = {
-                                "id": chosenGem["id"]
+                                "name": gem_name
                             }
 
                 break
@@ -98,6 +126,7 @@ def get_relevant_info(chosenGem, weights):
 
 
 def pre_loop():
+    # os.system("firebase firestore:delete --all-collections -y")
     id = init_database()
     return id
 
@@ -115,12 +144,21 @@ while True:
     curr_weights = get_weights(userId)
     print("\nWeight", get_relevant_info(gem, curr_weights))
 
-    i = input("Press h to heart and s to skip\n")
+    i = input("Press h to heart and s to skip. Press q to quit once done\n")
 
-    if (i == "h"):
-        heart(userId, gem["id"])
-    else:
-        read(userId, gem["id"])
+    while True:
+        if (i == "h"):
+            heart(userId, gem["id"])
+            break
+        elif (i == "s"):
+            read(userId, gem["id"])
+            break
+        elif (i == "q"):
+            delete_database()
+            quit()
+        else:
+            print("Invalid input, please type h, s, or q")
+            continue
 
     curr_weights = get_weights(userId)
     print("\nUpdated weight", get_relevant_info(gem, curr_weights))
